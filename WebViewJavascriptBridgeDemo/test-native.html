@@ -1,0 +1,97 @@
+<html>
+
+	<head>
+		<meta content="text/html; charset=utf-8" http-equiv="content-type">
+		<title>
+
+		</title>
+	</head>
+
+	<body>
+		<p>
+			<div id="show"></div>
+		</p>
+
+		<p><input type="button" id="enter3" value="payInterface" onclick="payInterface();" /></p>
+
+	</body>
+	<script>
+		var JsBridge = {
+			init: function(callback) {
+				var u = navigator.userAgent;
+				var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
+				if(!isiOS) {
+					console.log('andrio')
+					if(window.WebViewJavascriptBridge) {
+						callback(WebViewJavascriptBridge)
+					} else {
+						document.addEventListener(
+							'WebViewJavascriptBridgeReady',
+							function() {
+								callback(WebViewJavascriptBridge)
+							},
+							false
+						);
+					}
+				} else {
+					console.log('ios')
+					if(window.WebViewJavascriptBridge) {
+						return callback(WebViewJavascriptBridge);
+					}
+					if(window.WVJBCallbacks) {
+						return window.WVJBCallbacks.push(callback);
+					}
+					window.WVJBCallbacks = [callback];
+					var WVJBIframe = document.createElement('iframe');
+					WVJBIframe.style.display = 'none';
+					WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+					document.documentElement.appendChild(WVJBIframe);
+					setTimeout(function() {
+						document.documentElement.removeChild(WVJBIframe)
+					}, 0)
+				}
+			},
+			first: function() {
+				var u = navigator.userAgent;
+				var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
+				if(!isiOS) {
+					var _this = this;
+					_this.init(function(bridge) {
+						bridge.init(function(message, responseCallback) {
+							responseCallback(data);
+						})
+					})
+				}
+			},
+
+			registerHandler: function(name, fun) {
+				var _this = this;
+				_this.init(function(bridge) {
+					bridge.registerHandler(name, fun);
+				})
+			},
+
+			callHandler: function(name, data, fun) {
+				var _this = this;
+				_this.init(function(bridge) {
+					bridge.callHandler(name, data, fun);
+				})
+			}
+		}
+		JsBridge.first();
+		JsBridge.registerHandler('nativeCallWeb',function(data,res){
+				alert('原生调用web')
+				alert(data);
+				var  str='res native';
+				res(str);
+		})
+		function payInterface(){
+			JsBridge.callHandler('webCallNative','22222222',function(res){
+                    alert('web调用原生')
+					
+					alert('native回调'+res);
+			})
+		}
+	</script>
+
+</html>
